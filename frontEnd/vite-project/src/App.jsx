@@ -3,14 +3,15 @@ import axios from "axios";
 import BarChart from "./Components/BarChart";
 import PieChart from "./Components/PieChart";
 import "./App.css";
+import CombinedData from "./Components/CombinedData";
 
 const App = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); 
-  const [month, setMonth] = useState("03"); 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [month, setMonth] = useState("03");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [statistics, setStatistics] = useState({
@@ -214,10 +215,10 @@ const App = () => {
 
         <PieChart id="pie" />
         <BarChart />
+        <CombinedData></CombinedData>
       </div>
     </div>
   );
 };
 
 export default App;
-

@@ -1,61 +1,15 @@
-
-
-
-
-
-
-
-
-// applied serch and pagination here///
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const moment = require('moment');
 const app = express();
 
-// Enable CORS
+
 app.use(cors());
 
-// Helper function to filter transactions based on the month (ignoring year)
+
 const filterByMonth = (transactions, month) => {
   return transactions.filter(transaction => moment(transaction.dateOfSale, 'YYYY-MM-DD').format('MM') === month);
-};
-
-
-
-
-// Function to calculate price range statistics
-const calculatePriceRanges = (transactions) => {
-  const priceRanges = [
-    { range: '0 - 100', count: 0 },
-    { range: '101 - 200', count: 0 },
-    { range: '201 - 300', count: 0 },
-    { range: '301 - 400', count: 0 },
-    { range: '401 - 500', count: 0 },
-    { range: '501 - 600', count: 0 },
-    { range: '601 - 700', count: 0 },
-    { range: '701 - 800', count: 0 },
-    { range: '801 - 900', count: 0 },
-    { range: '901 - above', count: 0 },
-  ];
-
-  transactions.forEach(transaction => {
-    if (transaction.price && !isNaN(transaction.price)) {
-      const price = parseFloat(transaction.price);
-      if (price <= 100) priceRanges[0].count++;
-      else if (price <= 200) priceRanges[1].count++;
-      else if (price <= 300) priceRanges[2].count++;
-      else if (price <= 400) priceRanges[3].count++;
-      else if (price <= 500) priceRanges[4].count++;
-      else if (price <= 600) priceRanges[5].count++;
-      else if (price <= 700) priceRanges[6].count++;
-      else if (price <= 800) priceRanges[7].count++;
-      else if (price <= 900) priceRanges[8].count++;
-      else priceRanges[9].count++;
-    }
-  });
-
-  return priceRanges;
 };
 
 
@@ -103,10 +57,6 @@ app.get('/api/product-transaction', async (req, res) => {
     res.status(500).json({ message: 'Error fetching data from S3' });
   }
 });
-
-
-
-
 
 
 // Function to calculate statistics for a selected month
@@ -165,6 +115,39 @@ app.get('/api/statistics', async (req, res) => {
 });
 
 
+// Function to calculate price range statistics
+const calculatePriceRanges = (transactions) => {
+  const priceRanges = [
+    { range: '0 - 100', count: 0 },
+    { range: '101 - 200', count: 0 },
+    { range: '201 - 300', count: 0 },
+    { range: '301 - 400', count: 0 },
+    { range: '401 - 500', count: 0 },
+    { range: '501 - 600', count: 0 },
+    { range: '601 - 700', count: 0 },
+    { range: '701 - 800', count: 0 },
+    { range: '801 - 900', count: 0 },
+    { range: '901 - above', count: 0 },
+  ];
+
+  transactions.forEach(transaction => {
+    if (transaction.price && !isNaN(transaction.price)) {
+      const price = parseFloat(transaction.price);
+      if (price <= 100) priceRanges[0].count++;
+      else if (price <= 200) priceRanges[1].count++;
+      else if (price <= 300) priceRanges[2].count++;
+      else if (price <= 400) priceRanges[3].count++;
+      else if (price <= 500) priceRanges[4].count++;
+      else if (price <= 600) priceRanges[5].count++;
+      else if (price <= 700) priceRanges[6].count++;
+      else if (price <= 800) priceRanges[7].count++;
+      else if (price <= 900) priceRanges[8].count++;
+      else priceRanges[9].count++;
+    }
+  });
+
+  return priceRanges;
+};
 
 // Define a route to fetch bar chart data
 app.get('/api/bar-chart', async (req, res) => {
@@ -195,12 +178,6 @@ app.get('/api/bar-chart', async (req, res) => {
     res.status(500).json({ message: 'Error fetching bar chart data' });
   }
 });
-
-
-
-
-
-
 
 
 
@@ -252,34 +229,40 @@ app.get('/api/pie-chart', async (req, res) => {
 });
 
 
+// get combined data
 
-// get combined response of three function
-// app.get('/api/combined-data', async (req, res) => {
-//   const { month } = req.query;
+app.get('/api/combined-data', async (req, res) => {
+  const { month } = req.query;
 
-//   try {
-//     // Fetch data from the individual APIs
-//     const statisticsResponse = await axios.get('http://localhost:5000/api/statistics', { params: { month } });
-//     const barChartResponse = await axios.get('http://localhost:5000/api/bar-chart', { params: { month } });
-//     const pieChartResponse = await axios.get('http://localhost:5000/api/pie-chart', { params: { month } });
+  try {
+    // Fetch data from the individual APIs
+    const [statisticsResponse, barChartResponse, pieChartResponse] = await Promise.all([
+      axios.get('http://localhost:5000/api/statistics', { params: { month } }),
+      axios.get('http://localhost:5000/api/bar-chart', { params: { month } }),
+      axios.get('http://localhost:5000/api/pie-chart', { params: { month } }),
+    ]);
 
-//     // Combine the data
-//     const combinedData = {
-//       statistics: statisticsResponse.data,
-//       barChartData: barChartResponse.data,
-//       pieChartData: pieChartResponse.data,
-//     };
+    // Combine the data
+    const combinedData = {
+      statistics: statisticsResponse.data,
+      barChartData: barChartResponse.data,
+      pieChartData: {
+        categories: pieChartResponse.data.map((item) => ({
+          name: item.category,
+          count: item.count,
+        })),
+      },
+    };
 
-//     // Send the combined response
-//     res.json(combinedData);
-//   } catch (err) {
-//     console.error('Error fetching combined data:', err);
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// });
+    // Send the combined response
+    res.json(combinedData);
+  } catch (err) {
+    console.error('Error fetching combined data:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
-// Start the server on port 5000
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
