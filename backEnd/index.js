@@ -232,7 +232,7 @@ app.get('/api/pie-chart', async (req, res) => {
 // get combined data
 
 app.get('/api/combined-data', async (req, res) => {
-  const { month } = req.query;
+  const { month }=req.query;
 
   try {
     // Fetch data from the individual APIs

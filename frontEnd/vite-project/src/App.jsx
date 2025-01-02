@@ -213,7 +213,7 @@ const App = () => {
           </div>
         </div>
 
-        <PieChart id="pie" />
+        <PieChart id="pie"/>
         <BarChart />
         <CombinedData></CombinedData>
       </div>
