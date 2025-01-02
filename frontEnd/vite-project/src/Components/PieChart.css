@@ -1,0 +1,25 @@
+.piechart-section {
+  margin-top: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.piechart-section h2 {
+  font-size: 30px;
+}
+
+.pie {
+  width: 400px;
+  height: 400px;
+}
+
+.month {
+  padding: 4px 7px;
+  border: 1px solid rgb(182, 180, 180);
+  font-size: 16px;
+  border-radius: 5px;
+
+}
